@@ -3,9 +3,12 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 
-const links = [
+const ADMIN_EMAILS = ['benjaminbellomartin@gmail.com', 'sohmgmandhare@gmail.com']
+
+const baseLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
   { href: '/schedule', label: 'Schedule' },
@@ -15,6 +18,21 @@ const links = [
 export default function Navbar() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAdmin(ADMIN_EMAILS.includes(session?.user?.email ?? ''))
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setIsAdmin(ADMIN_EMAILS.includes(session?.user?.email ?? ''))
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const links = isAdmin
+    ? [...baseLinks, { href: '/admin', label: 'Admin' }]
+    : baseLinks
 
   return (
     <>
