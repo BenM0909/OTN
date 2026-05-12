@@ -20,6 +20,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
   const [uploading, setUploading] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
 
   const loadOrders = useCallback(async () => {
@@ -50,6 +51,14 @@ export default function Admin() {
       .eq('id', orderId)
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o))
     setUpdating(null)
+  }
+
+  async function handleDelete(orderId: string) {
+    if (!confirm('Delete this order? This cannot be undone.')) return
+    setDeleting(orderId)
+    await supabase.from('conversion_requests').delete().eq('id', orderId)
+    setOrders(prev => prev.filter(o => o.id !== orderId))
+    setDeleting(null)
   }
 
   async function handleFileUpload(orderId: string, file: File) {
@@ -157,12 +166,13 @@ export default function Admin() {
                 <th>Notes</th>
                 <th>Status</th>
                 <th>File</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr className="empty-row">
-                  <td colSpan={10}>No orders found.</td>
+                  <td colSpan={11}>No orders found.</td>
                 </tr>
               ) : filtered.map(o => {
                 const date = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -237,6 +247,23 @@ export default function Admin() {
                           </label>
                         </div>
                       )}
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleDelete(o.id)}
+                        disabled={deleting === o.id}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: deleting === o.id ? 'wait' : 'pointer',
+                          color: '#ef4444',
+                          fontSize: '0.8rem',
+                          padding: '0.2rem 0.4rem',
+                          opacity: deleting === o.id ? 0.5 : 1,
+                        }}
+                      >
+                        {deleting === o.id ? '…' : 'Delete'}
+                      </button>
                     </td>
                   </tr>
                 )
