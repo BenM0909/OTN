@@ -10,6 +10,14 @@ const outputFormats = ['MP4 (recommended)', 'MOV', 'AVI', 'USB Drive (+$15)', 'D
 export default function Schedule() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [quantity, setQuantity] = useState(1)
+  const [turnaround, setTurnaround] = useState('Standard (5–7 business days)')
+
+  function handleQuantityChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const qty = parseInt(e.target.value, 10) || 1
+    setQuantity(qty)
+    if (qty > 5) setTurnaround('Standard (5–7 business days)')
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -113,7 +121,17 @@ export default function Schedule() {
               </div>
               <div className="form-group">
                 <label htmlFor="quantity">Number of Tapes</label>
-                <input type="number" id="quantity" name="quantity" min="1" max="200" placeholder="e.g. 5" required />
+                <input
+                  type="number"
+                  id="quantity"
+                  name="quantity"
+                  min="1"
+                  max="200"
+                  placeholder="e.g. 5"
+                  required
+                  value={quantity}
+                  onChange={handleQuantityChange}
+                />
               </div>
               <div className="form-group">
                 <label htmlFor="outputFormat">Preferred Output Format</label>
@@ -124,10 +142,15 @@ export default function Schedule() {
               </div>
               <div className="form-group">
                 <label htmlFor="rush">Turnaround</label>
-                <select id="rush" name="rush">
+                <select id="rush" name="rush" value={turnaround} onChange={e => setTurnaround(e.target.value)}>
                   <option>Standard (5–7 business days)</option>
-                  <option>Rush (2–3 business days, +$25)</option>
+                  <option disabled={quantity > 5}>Rush (2–3 business days, +$25)</option>
                 </select>
+                {quantity > 5 && (
+                  <p style={{ fontSize: '0.8rem', color: 'var(--gray)', marginTop: '0.35rem' }}>
+                    Rush is not available for orders over 5 tapes.
+                  </p>
+                )}
               </div>
             </fieldset>
 
