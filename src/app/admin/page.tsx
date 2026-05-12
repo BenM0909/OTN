@@ -19,6 +19,7 @@ export default function Admin() {
   const [orders, setOrders] = useState<ConversionRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [uploading, setUploading] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
 
   const loadOrders = useCallback(async () => {
@@ -49,6 +50,29 @@ export default function Admin() {
       .eq('id', orderId)
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o))
     setUpdating(null)
+  }
+
+  async function handleFileUpload(orderId: string, file: File) {
+    setUploading(orderId)
+    const ext = file.name.split('.').pop()
+    const path = `${orderId}.${ext}`
+    const { error: uploadError } = await supabase.storage
+      .from('converted-files')
+      .upload(path, file, { upsert: true })
+    if (uploadError) {
+      alert('Upload failed: ' + uploadError.message)
+      setUploading(null)
+      return
+    }
+    const { data: { publicUrl } } = supabase.storage
+      .from('converted-files')
+      .getPublicUrl(path)
+    await supabase
+      .from('conversion_requests')
+      .update({ file_url: publicUrl })
+      .eq('id', orderId)
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, file_url: publicUrl } : o))
+    setUploading(null)
   }
 
   const filtered = filterStatus === 'all' ? orders : orders.filter(o => o.status === filterStatus)
@@ -132,12 +156,13 @@ export default function Admin() {
                 <th>Delivery</th>
                 <th>Notes</th>
                 <th>Status</th>
+                <th>File</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr className="empty-row">
-                  <td colSpan={9}>No orders found.</td>
+                  <td colSpan={10}>No orders found.</td>
                 </tr>
               ) : filtered.map(o => {
                 const date = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -182,6 +207,36 @@ export default function Admin() {
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                       </select>
+                    </td>
+                    <td style={{ minWidth: '180px' }}>
+                      {o.status === 'complete' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                          {o.file_url && (
+                            <a
+                              href={o.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ fontSize: '0.75rem', color: 'var(--black)', textDecoration: 'underline' }}
+                            >
+                              {uploading === o.id ? 'Replacing…' : 'Uploaded ↗'}
+                            </a>
+                          )}
+                          <label style={{ fontSize: '0.75rem', cursor: 'pointer', color: 'var(--gray)' }}>
+                            {uploading === o.id
+                              ? 'Uploading…'
+                              : o.file_url ? 'Replace file' : 'Upload file'}
+                            <input
+                              type="file"
+                              style={{ display: 'none' }}
+                              disabled={uploading === o.id}
+                              onChange={e => {
+                                const file = e.target.files?.[0]
+                                if (file) handleFileUpload(o.id, file)
+                              }}
+                            />
+                          </label>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 )

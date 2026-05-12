@@ -207,12 +207,13 @@ export default function Account() {
                 <th>Turnaround</th>
                 <th>Delivery</th>
                 <th>Status</th>
+                <th>Download</th>
               </tr>
             </thead>
             <tbody>
               {orders.length === 0 ? (
                 <tr className="empty-row">
-                  <td colSpan={6}>
+                  <td colSpan={7}>
                     No orders yet.{' '}
                     <Link href="/schedule" style={{ color: 'var(--black)', textDecoration: 'underline' }}>
                       Schedule one.
@@ -231,6 +232,18 @@ export default function Account() {
                     <td>{o.turnaround ?? '—'}</td>
                     <td>{o.delivery === 'dropoff' ? 'Drop-off' : 'Mail'}</td>
                     <td><span className={`badge ${statusClass}`}>{statusLabel}</span></td>
+                    <td>
+                      {o.file_url ? (
+                        <a
+                          href={o.file_url}
+                          download
+                          className="btn btn-outline"
+                          style={{ fontSize: '0.75rem', padding: '0.3rem 0.7rem' }}
+                        >
+                          Download
+                        </a>
+                      ) : '—'}
+                    </td>
                   </tr>
                 )
               })}

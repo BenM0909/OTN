@@ -20,4 +20,5 @@ export interface ConversionRequest {
   notes: string | null
   status: string
   user_id: string | null
+  file_url: string | null
 }
