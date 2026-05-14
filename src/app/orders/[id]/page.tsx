@@ -287,7 +287,7 @@ export default function OrderDetail() {
                   )
                 })}
               </tbody>
-              {tapes.some(t => t.length_hours > 0 || t.length_minutes > 0) && (
+              {totalPrice > 0 && (
                 <tfoot>
                   <tr>
                     <td colSpan={isAdmin || tapes.some(t => t.file_url) ? 3 : 3}
@@ -305,7 +305,7 @@ export default function OrderDetail() {
           </div>
         )}
 
-        {tapes.length > 0 && (
+        {tapes.length > 0 && isAdmin && (
           <p style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: 'var(--gray-400)' }}>
             Pricing: $15 for up to 1 hr 59 min · +$2 per additional hour
           </p>

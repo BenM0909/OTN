@@ -35,7 +35,8 @@ export interface TapeItem {
 }
 
 export function calcTapePrice(hours: number, minutes: number): number {
-  const totalHours = hours + (minutes >= 60 ? Math.floor(minutes / 60) : 0)
+  if (hours === 0 && minutes === 0) return 0
+  const totalHours = hours + Math.floor(minutes / 60)
   if (totalHours < 2) return 15
   return 15 + (totalHours - 1) * 2
 }
