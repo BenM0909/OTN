@@ -177,7 +177,7 @@ export default function Admin() {
               ) : filtered.map(o => {
                 const date = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                 return (
-                  <tr key={o.id}>
+                  <tr key={o.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/orders/${o.id}`)}>
                     <td style={{ fontWeight: 500 }}>{o.first_name} {o.last_name}</td>
                     <td>
                       <div style={{ fontSize: '0.875rem' }}>{o.email}</div>
@@ -195,7 +195,7 @@ export default function Admin() {
                         </span>
                       ) : '—'}
                     </td>
-                    <td>
+                    <td onClick={e => e.stopPropagation()}>
                       <select
                         value={o.status}
                         disabled={updating === o.id}
@@ -218,7 +218,7 @@ export default function Admin() {
                         ))}
                       </select>
                     </td>
-                    <td style={{ minWidth: '180px' }}>
+                    <td style={{ minWidth: '180px' }} onClick={e => e.stopPropagation()}>
                       {o.status === 'complete' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                           {o.file_url && (
@@ -250,7 +250,7 @@ export default function Admin() {
                     </td>
                     <td>
                       <button
-                        onClick={() => handleDelete(o.id)}
+                        onClick={e => { e.stopPropagation(); handleDelete(o.id) }}
                         disabled={deleting === o.id}
                         style={{
                           background: 'none',

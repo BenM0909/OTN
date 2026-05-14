@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { supabase, type ConversionRequest } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
@@ -10,6 +11,7 @@ type View = 'loading' | 'auth' | 'dashboard'
 type Tab = 'login' | 'signup'
 
 export default function Account() {
+  const router = useRouter()
   const [view, setView] = useState<View>('loading')
   const [tab, setTab] = useState<Tab>('login')
   const [user, setUser] = useState<User | null>(null)
@@ -235,7 +237,7 @@ export default function Account() {
                 const statusClass = o.status === 'complete' ? 'badge-done' : 'badge-progress'
                 const statusLabel = o.status === 'complete' ? 'Complete' : o.status === 'in_progress' ? 'In Progress' : 'Pending'
                 return (
-                  <tr key={o.id}>
+                  <tr key={o.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/orders/${o.id}`)}>
                     <td>{o.tape_type}</td>
                     <td>{o.quantity}</td>
                     <td>{date}</td>
@@ -256,7 +258,7 @@ export default function Account() {
                     </td>
                     <td>
                       <button
-                        onClick={() => handleDelete(o.id)}
+                        onClick={e => { e.stopPropagation(); handleDelete(o.id) }}
                         disabled={deleting === o.id}
                         style={{
                           background: 'none',

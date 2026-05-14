@@ -22,3 +22,20 @@ export interface ConversionRequest {
   user_id: string | null
   file_url: string | null
 }
+
+export interface TapeItem {
+  id: string
+  order_id: string
+  tape_number: number
+  name: string | null
+  length_hours: number
+  length_minutes: number
+  file_url: string | null
+  created_at: string
+}
+
+export function calcTapePrice(hours: number, minutes: number): number {
+  const totalHours = hours + (minutes >= 60 ? Math.floor(minutes / 60) : 0)
+  if (totalHours < 2) return 15
+  return 15 + (totalHours - 1) * 2
+}
